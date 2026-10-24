@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#30205f">
+<title>Quiz AGNES | Ciência, Programação e Tecnologia</title>
+<style>
+:root{--purple:#30205f;--blue:#79d7f2;--ink:#202033;--muted:#68677a;--paper:#f6f7fc;--white:#fff;--green:#16845b;--red:#b8324a}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(145deg,#f5f3ff,#edfaff);color:var(--ink);min-height:100vh}
+header{background:var(--purple);color:white;padding:28px 18px 34px;text-align:center;position:relative;overflow:hidden}
+header:before,header:after{content:"";position:absolute;border:1px solid #ffffff30;border-radius:50%;width:240px;height:240px;top:-150px;left:-55px}
+header:after{width:180px;height:180px;left:auto;right:-50px;top:auto;bottom:-130px}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:900;letter-spacing:2px;font-size:1.15rem}
+.brand-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:var(--blue);color:var(--purple);font-size:1.3rem}
+h1{font-size:clamp(1.8rem,5vw,3rem);margin:18px 0 8px;line-height:1.08}
+header p{margin:0 auto;max-width:650px;color:#e9e7fa;line-height:1.55}
+main{width:min(850px,calc(100% - 28px));margin:-18px auto 45px;position:relative}
+.panel{background:var(--white);border-radius:22px;padding:clamp(18px,4vw,32px);box-shadow:0 16px 50px #29205214}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.tag{font-size:.8rem;font-weight:800;color:var(--purple);background:#eeebff;padding:7px 11px;border-radius:999px}
+.progress-wrap{height:8px;background:#eeedf5;border-radius:99px;margin:18px 0 26px;overflow:hidden}
+.progress{height:100%;width:0;background:linear-gradient(90deg,var(--purple),#65cde9);transition:width .25s}
+#counter{color:var(--muted);font-size:.9rem;font-weight:700}
+.question{font-size:clamp(1.2rem,3vw,1.55rem);line-height:1.35;margin:0 0 20px}
+.options{display:grid;gap:11px}
+.option{width:100%;display:flex;align-items:flex-start;gap:12px;text-align:left;border:2px solid #e7e7f0;background:#fff;border-radius:14px;padding:14px 15px;font:inherit;cursor:pointer;transition:.15s;color:var(--ink)}
+.option:hover{border-color:#aaa0df;background:#faf9ff}
+.option:focus-visible,button:focus-visible{outline:3px solid #148db1;outline-offset:3px}
+.letter{flex:0 0 29px;height:29px;border-radius:9px;background:#f0eff8;color:var(--purple);display:grid;place-items:center;font-weight:800;font-size:.9rem}
+.option.selected{border-color:var(--purple);background:#f5f2ff}
+.option.selected .letter{background:var(--purple);color:white}
+.option.correct{border-color:var(--green);background:#edfbf4}
+.option.correct .letter{background:var(--green);color:white}
+.option.wrong{border-color:var(--red);background:#fff1f3}
+.option:disabled{cursor:default;color:var(--ink)}
+.feedback{margin-top:15px;padding:13px 15px;border-radius:12px;line-height:1.5;display:none}
+.feedback.show{display:block}
+.feedback.good{background:#edfbf4;color:#126543}
+.feedback.bad{background:#fff1f3;color:#8e2437}
+.actions{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:24px}
+button.action{border:0;border-radius:12px;padding:12px 18px;font:inherit;font-weight:800;cursor:pointer}
+.primary{background:var(--purple);color:white}
+.primary:hover{background:#443181}
+.secondary{background:#efeff6;color:var(--purple)}
+button:disabled{opacity:.42;cursor:not-allowed}
+#result{display:none;text-align:center}
+.score-circle{width:130px;height:130px;margin:22px auto;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#e7f9ff,#eee8ff);border:8px solid #fff;box-shadow:0 0 0 2px #e7e3f5}
+.score-circle strong{font-size:2rem;color:var(--purple)}
+.result-title{font-size:1.7rem;margin-bottom:8px}
+.result-copy{color:var(--muted);line-height:1.6}
+footer{text-align:center;padding:0 20px 28px;color:#77758b;font-size:.85rem}
+.small{font-size:.88rem;color:var(--muted)}
+@media(max-width:480px){.actions button{flex:1}.panel{border-radius:18px}.option{padding:12px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="brand-mark">A</span><span>PROJETO AGNES</span></div>
+  <h1>Quiz de Ciência & Tecnologia</h1>
+  <p>Teste seus conhecimentos em programação, ciência de dados, inteligência artificial, robótica e mulheres pioneiras da tecnologia.</p>
+</header>
+<main>
+<section class="panel" id="quiz" aria-live="polite">
+  <div class="topline"><span class="tag">DESAFIO AGNES</span><span id="counter">Pergunta 1 de 20</span></div>
+  <div class="progress-wrap" aria-label="Progresso do quiz"><div class="progress" id="progress"></div></div>
+  <h2 class="question" id="question"></h2>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback" role="status"></div>
+  <div class="actions">
+    <button class="action secondary" id="restart" type="button">Recomeçar</button>
+    <button class="action primary" id="next" type="button" disabled>Responder</button>
+  </div>
+</section>
+<section class="panel" id="result" aria-live="polite">
+  <span class="tag">DESAFIO CONCLUÍDO</span>
+  <div class="score-circle"><strong id="score">0/20</strong></div>
+  <h2 class="result-title" id="resultTitle">Muito bem!</h2>
+  <p class="result-copy" id="resultCopy"></p>
+  <div class="actions" style="justify-content:center">
+    <button class="action primary" id="again" type="button">Jogar novamente</button>
+    <button class="action secondary" id="review" type="button">Revisar respostas</button>
+  </div>
+</section>
+</main>
+<footer>AGNES — Accessible Generation of Neuroinclusive Educational Solutions<br>Aprender, criar e transformar com tecnologia.</footer>
+<script>
+const questions = [
+{q:"O que é um algoritmo?",o:["Uma sequência de instruções para resolver um problema","Uma peça física do computador","Um tipo de conexão com a internet","Um programa antivírus"],a:0,why:"Um algoritmo organiza etapas lógicas para realizar uma tarefa ou solucionar um problema."},
+{q:"Para que serve uma variável na programação?",o:["Desligar o computador","Armazenar um valor utilizado pelo programa","Excluir arquivos automaticamente","Conectar o computador à internet"],a:1,why:"Uma variável permite guardar e utilizar valores durante a execução de um programa."},
+{q:"Qual linguagem é muito utilizada para criar páginas web interativas?",o:["SQL","HTML apenas","JavaScript","CSV"],a:2,why:"JavaScript permite responder a cliques, validar formulários e modificar elementos de páginas web."},
+{q:"O que significa depuração (debugging)?",o:["Criar uma rede social","Aumentar a memória física","Instalar um sistema operacional","Identificar e corrigir erros em um programa"],a:3,why:"Depuração é o processo de localizar, investigar e corrigir erros no software."},
+{q:"Para que serve um banco de dados?",o:["Armazenar e organizar informações","Aumentar o tamanho da tela","Substituir o sistema operacional","Impedir ataques digitais automaticamente"],a:0,why:"Bancos de dados ajudam a organizar, consultar, atualizar e gerenciar informações."},
+{q:"O que é ciência de dados?",o:["Apenas a montagem de computadores","A área que analisa dados para extrair informações e conhecimentos","Uma linguagem exclusiva para jogos","Um tipo de rede social"],a:1,why:"A ciência de dados combina métodos e ferramentas para analisar dados e produzir conhecimento."},
+{q:"Qual gráfico é geralmente adequado para comparar quantidades entre categorias?",o:["Fluxograma","Mapa de rede","Gráfico de barras","Diagrama elétrico"],a:2,why:"Gráficos de barras facilitam a comparação de valores entre categorias."},
+{q:"O que é inteligência artificial?",o:["Um computador que nunca erra","Um robô necessariamente humanoide","Uma máquina que sempre possui consciência","Uma área que desenvolve sistemas para realizar tarefas associadas à inteligência"],a:3,why:"A IA abrange sistemas que reconhecem padrões, processam linguagem, fazem previsões e apoiam decisões."},
+{q:"O que caracteriza o aprendizado de máquina (machine learning)?",o:["Aprender padrões a partir de dados","Executar apenas cálculos manuais","Montar peças eletrônicas","Apagar dados automaticamente"],a:0,why:"Modelos de aprendizado de máquina identificam padrões a partir de dados ou experiências."},
+{q:"Qual é uma boa prática ao utilizar IA para fazer uma pesquisa?",o:["Aceitar tudo sem conferir","Verificar as informações e consultar fontes confiáveis","Compartilhar senhas com a ferramenta","Considerar toda resposta como verdadeira"],a:1,why:"A IA pode cometer erros; conferir fatos e fontes é essencial."},
+{q:"Quem foi Ada Lovelace?",o:["A criadora do Wi-Fi","A inventora do primeiro smartphone","Uma pioneira que escreveu um algoritmo para a Máquina Analítica","A criadora da linguagem Python"],a:2,why:"Ada Lovelace descreveu um algoritmo para calcular números de Bernoulli com a Máquina Analítica de Charles Babbage."},
+{q:"Qual foi uma contribuição importante de Grace Hopper?",o:["Inventar a internet","Criar o primeiro celular","Desenvolver o GPS","Contribuir para compiladores e linguagens de programação"],a:3,why:"Grace Hopper foi pioneira no desenvolvimento de compiladores e contribuiu para linguagens de programação de alto nível."},
+{q:"Radia Perlman é reconhecida por suas contribuições em qual área?",o:["Redes de computadores","Medicina genética","Astronomia observacional","Robótica industrial exclusivamente"],a:0,why:"Radia Perlman é conhecida por seu trabalho em redes, incluindo o algoritmo associado ao Spanning Tree Protocol."},
+{q:"Qual pesquisadora liderou o desenvolvimento do ImageNet, importante para a visão computacional?",o:["Katherine Johnson","Fei-Fei Li","Ada Lovelace","Hedy Lamarr"],a:1,why:"Fei-Fei Li liderou o desenvolvimento do ImageNet, uma base de imagens importante para a pesquisa em visão computacional."},
+{q:"O que é robótica?",o:["O estudo exclusivo de aplicativos","A criação apenas de desenhos digitais","A área que envolve projeto, construção e programação de robôs","Um tipo de banco de dados"],a:2,why:"A robótica integra áreas como engenharia, eletrônica, mecânica e programação para desenvolver robôs."},
+{q:"O que é um sensor em um robô?",o:["Um programa de edição de texto","Uma bateria obrigatoriamente","Uma peça decorativa","Um dispositivo que detecta estímulos ou condições do ambiente"],a:3,why:"Sensores captam informações do ambiente, como distância, luz, temperatura ou movimento."},
+{q:"O que significa dizer que um conjunto de dados contém viés?",o:["Que pode favorecer determinados grupos ou produzir resultados sistematicamente distorcidos","Que todos os dados estão corretos","Que os arquivos são pequenos","Que o computador está sem bateria"],a:0,why:"Viés pode distorcer análises ou resultados e levar a conclusões injustas ou pouco representativas."},
+{q:"O que é computação em nuvem?",o:["Guardar arquivos somente em um pen drive","Utilizar recursos computacionais por meio de serviços acessados pela rede","Programar sem computador","Criar imagens de nuvens"],a:1,why:"A computação em nuvem permite acessar serviços, armazenamento e processamento por meio de uma rede, geralmente a internet."},
+{q:"Qual é a principal função da criptografia?",o:["Aumentar a velocidade do teclado","Criar gráficos estatísticos","Proteger informações transformando-as de forma que só possam ser compreendidas com os meios adequados","Corrigir todos os erros de programação"],a:2,why:"A criptografia transforma informações para ajudar a protegê-las contra acesso não autorizado."},
+{q:"Como a tecnologia pode contribuir para a educação inclusiva?",o:["Utilizando sempre o mesmo formato de conteúdo para todos","Eliminando recursos de acessibilidade","Impedindo a personalização das atividades","Oferecendo recursos acessíveis, como leitores de tela, legendas e audiodescrição"],a:3,why:"Recursos de acessibilidade ajudam a reduzir barreiras e ampliar o acesso aos conteúdos educacionais."}
+];
+let index=0, answers=Array(questions.length).fill(null), checked=false;
+const $=id=>document.getElementById(id);
+function render(){
+ checked=false;
+ const item=questions[index];
+ $("counter").textContent=`Pergunta ${index+1} de ${questions.length}`;
+ $("progress").style.width=`${index/questions.length*100}%`;
+ $("question").textContent=item.q;
+ $("options").innerHTML="";
+ item.o.forEach((label,i)=>{
+  const b=document.createElement("button");
+  b.type="button";b.className="option";b.setAttribute("aria-pressed","false");
+  const letter=document.createElement("span");letter.className="letter";letter.textContent=String.fromCharCode(65+i);
+  const txt=document.createElement("span");txt.textContent=label;
+  b.append(letter,txt);
+  b.addEventListener("click",()=>{
+   if(checked)return;
+   answers[index]=i;
+   document.querySelectorAll(".option").forEach((el,j)=>{el.classList.toggle("selected",i===j);el.setAttribute("aria-pressed",String(i===j));});
+   $("next").disabled=false;$("next").textContent="Responder";
+  });
+  $("options").appendChild(b);
+ });
+ $("feedback").className="feedback";$("feedback").textContent="";
+ $("next").disabled=answers[index]===null;
+ $("next").textContent=index===questions.length-1?"Ver resultado":"Responder";
+ $("quiz").style.display="block";$("result").style.display="none";
+}
+function answer(){
+ if(answers[index]===null)return;
+ checked=true;
+ const item=questions[index],chosen=answers[index];
+ document.querySelectorAll(".option").forEach((el,j)=>{
+  el.disabled=true;
+  if(j===item.a)el.classList.add("correct");
+  else if(j===chosen)el.classList.add("wrong");
+ });
+ const f=$("feedback");f.className="feedback show "+(chosen===item.a?"good":"bad");
+ f.textContent=(chosen===item.a?"Muito bem! ":"Ainda não. ")+item.why;
+ $("progress").style.width=`${(index+1)/questions.length*100}%`;
+ $("next").disabled=false;$("next").textContent=index===questions.length-1?"Ver resultado":"Próxima pergunta";
+}
+function showResult(){
+ const score=answers.reduce((sum,a,i)=>sum+(a===questions[i].a?1:0),0);
+ $("quiz").style.display="none";$("result").style.display="block";
+ $("score").textContent=`${score}/${questions.length}`;
+ $("progress").style.width="100%";
+ $("resultTitle").textContent=score>=18?"Excelente!":score>=14?"Muito bem!":score>=10?"Bom trabalho!":"Continue explorando!";
+ $("resultCopy").textContent=`Você acertou ${score} de ${questions.length} perguntas (${Math.round(score/questions.length*100)}%). ${score>=14?"Seu conhecimento em ciência e tecnologia está avançando!":"Revise os temas e tente novamente. Cada tentativa é uma oportunidade de aprender."}`;
+}
+$("next").addEventListener("click",()=>{
+ if(!checked){answer();return;}
+ if(index<questions.length-1){index++;render();window.scrollTo({top:0,behavior:"smooth"});}
+ else showResult();
+});
+function restart(){index=0;answers=Array(questions.length).fill(null);render();window.scrollTo({top:0,behavior:"smooth"});}
+$("restart").addEventListener("click",restart);$("again").addEventListener("click",restart);
+$("review").addEventListener("click",()=>{index=0;render();});
+render();
+</script>
+</body>
+</html>
